@@ -1,0 +1,40 @@
+video_root: 'datapath_to_didemo/' 
+
+ann_root: 'datapath_to_didemo/'  
+dataset: 'didemo'
+
+
+pretrained: 'https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_base.pth'
+vit: 'base'
+batch_size_train: 8
+batch_size_test: 16  
+k_test: 128
+image_size: 224
+num_frm_test: 16 
+num_frm_train: 8 
+
+vit_grad_ckpt: False 
+vit_ckpt_layer: 4
+adapter_dim: 512
+init_lr: 1e-4
+modality: video 
+
+
+frame_aware_attention: True 
+video_key_adapter: False
+video_key_adapter_dim: 64
+
+temporal_embed: False
+temporal_attention: False
+finetune_head: False
+finetune_all: False
+
+queue_size: 57600
+alpha: 0.4
+beta: 0
+negative_all_rank: True
+
+# optimizer
+weight_decay: 0.05
+min_lr: 0
+max_epoch: 5

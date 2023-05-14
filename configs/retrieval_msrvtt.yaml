@@ -1,0 +1,45 @@
+video_root: 'datapath_to_msrvtt/MSRVTT/videos/compress'  
+
+ann_root: 'datapath_to_msrvtt/MSRVTT/txt_db/msrvtt_retrieval'  
+dataset: 'msrvtt'
+
+
+pretrained: 'https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_base.pth'
+
+
+# size of vit model; base or large
+vit: 'base'
+batch_size_train: 8
+batch_size_test: 16
+k_test: 128
+image_size: 224
+num_frm_test: 8 
+num_frm_train: 8 
+
+vit_grad_ckpt: False 
+vit_ckpt_layer: 4
+
+init_lr: 1e-4
+modality: video 
+
+frame_aware_attention: True  
+video_key_adapter: False
+video_key_adapter_dim: 64
+
+
+temporal_embed: False
+temporal_attention: False
+
+finetune_head: False
+finetune_all: False
+
+
+queue_size: 57600
+alpha: 0.4
+beta: 0
+negative_all_rank: True
+
+# optimizer
+weight_decay: 0.05
+min_lr: 0
+max_epoch: 5
