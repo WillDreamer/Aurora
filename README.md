@@ -9,7 +9,7 @@
 
 - To parameter-efficient finetune on MSCOCO/Flickr:
 <pre>python -m torch.distributed.run --nproc_per_node=8 train_retrieval.py --config ./configs/retrieval_{coco, flickr}.yaml --output_dir output/{coco, flickr} </pre> 
-- To evaluate UniAdapter on MSCOCO/Flickr:
+- To evaluate on MSCOCO/Flickr:
 <pre>python -m torch.distributed.run --nproc_per_node=8 train_retrieval.py --config ./configs/retrieval_{coco, flickr}.yaml --output_dir output/{coco, flickr} --evaluate </pre> 
 
 #### Visual Question Answerring
@@ -17,7 +17,7 @@
 
 - To parameter-efficient finetune on VQAv2:
 <pre>python -m torch.distributed.run --nproc_per_node=8 train_vqa.py --config ./configs/vqa.yaml --output_dir $static_dir</pre> 
-- To evaluate UniAdapter on VQAv2 (need to update the result file to the official server):
+- To evaluate on VQAv2 (need to update the result file to the official server):
 <pre>python -m torch.distributed.run --nproc_per_node=8 train_vqa.py --config ./configs/vqa.yaml --output_dir $static_dir --evaluate </pre> 
 
 #### Video-text Retrieval and VideoQA
