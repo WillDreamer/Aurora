@@ -1,4 +1,4 @@
-# Aurora
+# Aurora: Mode Approximation Makes Good Multimodal Prompts
 
 ## Getting Started
 
