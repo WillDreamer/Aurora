@@ -83,7 +83,7 @@ class BertEmbeddings(nn.Module):
             inputs_embeds = self.word_embeddings(input_ids)
 
         embeddings = inputs_embeds
-
+        # simply add
         if self.position_embedding_type == "absolute":
             position_embeddings = self.position_embeddings(position_ids)
             embeddings += position_embeddings
@@ -107,12 +107,14 @@ class BertSelfAttention(nn.Module):
         self.all_head_size = self.num_attention_heads * self.attention_head_size
         self.cross_attention = is_cross_attention
 
-        self.R = R
+        self.R=R
+        
         self.query = nn.Linear(config.hidden_size, self.all_head_size)
         self.q_CP = nn.Parameter(torch.zeros(self.R, 1))
         nn.init.xavier_uniform_(self.q_CP)
         self.dp = nn.Dropout(0.1)
-
+        
+        # cross-attention, comes from encoder_hidden_states
         if is_cross_attention:
             self.key = nn.Linear(config.encoder_width, self.all_head_size)
             self.value = nn.Linear(config.encoder_width, self.all_head_size)
@@ -120,7 +122,7 @@ class BertSelfAttention(nn.Module):
             self.v_CP = nn.Parameter(torch.zeros(self.R, 1))
             nn.init.xavier_uniform_(self.k_CP)
             nn.init.xavier_uniform_(self.v_CP)
-        # self-attention
+        # self-attention, comes from hidden_states
         else: 
             self.key = nn.Linear(config.hidden_size, self.all_head_size)
             self.value = nn.Linear(config.hidden_size, self.all_head_size)
@@ -174,17 +176,16 @@ class BertSelfAttention(nn.Module):
 
 
         is_cross_attention = encoder_hidden_states is not None
-
+        
+        # code for implementing LoRA
         if lora_key_layer is not None:
             lora_key_layer_ = self.transpose_for_scores(lora_key_layer[0])
             lora_value_layer_ = self.transpose_for_scores(lora_key_layer[1])
             
         if is_cross_attention:
-
             key_layer = self.transpose_for_scores(self.key(encoder_hidden_states) + CP_V(self.dp(CP_U(encoder_hidden_states)) @ (CP_C @ self.k_CP)[:,:,0]))
             value_layer = self.transpose_for_scores(self.value(encoder_hidden_states) + CP_V(self.dp(CP_U(encoder_hidden_states)) @ (CP_C @ self.v_CP)[:,:,0]))
-            
-            attention_mask = encoder_attention_mask # (bs,1,1,577)
+            attention_mask = encoder_attention_mask # note the attention_mask changes to encoder_attention_mask, since the mask operation is performed on key and values
         elif past_key_value is not None:
             key_layer = self.transpose_for_scores(self.key(hidden_states))
             value_layer = self.transpose_for_scores(self.value(hidden_states))
@@ -201,7 +202,8 @@ class BertSelfAttention(nn.Module):
         if lora_key_layer is not None: 
             key_layer = key_layer + lora_key_layer_
             value_layer = value_layer + lora_value_layer_
-
+            
+        # frame_aware improvement
         if is_cross_attention and frame_aware_attention_weight is not None:
             frame_length = frame_aware_attention_weight.size(1) # T
             a, b, c, d = key_layer.shape #(bs,num_head,seq_len,hidden_dim)
@@ -251,7 +253,7 @@ class BertSelfAttention(nn.Module):
         if head_mask is not None:
             attention_probs_dropped = attention_probs_dropped * head_mask
 
-        context_layer = torch.matmul(attention_probs_dropped, value_layer) # (bs, head, seqlen, seqlen)
+        context_layer = torch.matmul(attention_probs_dropped, value_layer) # (bs, num_head, seq_len, seq_len)
         context_layer = context_layer.permute(0, 2, 1, 3).contiguous()
         new_context_layer_shape = context_layer.size()[:-2] + (self.all_head_size,)
         context_layer = context_layer.view(*new_context_layer_shape)
@@ -271,6 +273,7 @@ class BertSelfOutput(nn.Module):
     def forward(self, hidden_states, input_tensor):
         hidden_states = self.dense(hidden_states)
         hidden_states = self.dropout(hidden_states)
+        # residual connection
         hidden_states = self.LayerNorm(hidden_states + input_tensor)
         return hidden_states
 
@@ -382,10 +385,12 @@ class BertLayer(nn.Module):
 
         self.intermediate = BertIntermediate(config)
         self.output = BertOutput(config)
-
+        
+        # code for implementing adapter
         if self.adapter_config and self.adapter_config['adapter']:
             self.adapter = adapter
-
+            
+        # lightweight query transformation operation
         self.CP_scaleself = nn.Parameter(torch.zeros(768))
         self.CP_shiftself = nn.Parameter(torch.zeros(768))
         nn.init.normal_(self.CP_scaleself, mean=0, std=.0002)
@@ -425,6 +430,7 @@ class BertLayer(nn.Module):
             CP_C=CP_C
         )
         attention_output = self_attention_outputs[0]
+        # query transformation
         residual_text = 0.1 * (attention_output * self.CP_scaleself + self.CP_shiftself)
         outputs = self_attention_outputs[1:-1]
         present_key_value = self_attention_outputs[-1]
@@ -550,9 +556,9 @@ class BertEncoder(nn.Module):
                     mode=mode,
                     frame_aware_attention_weight=frame_aware_attention_weight,
                     lora_key_layer=lora_key_layer if lora_key_layer is not None else None,
-                    CP_U = CP_U,
-                    CP_V = CP_V, 
-                    CP_C = CP_C
+                    CP_U=CP_U,
+                    CP_V=CP_V, 
+                    CP_C=CP_C
                 )
             else:
                 layer_outputs = layer_module(
@@ -566,9 +572,9 @@ class BertEncoder(nn.Module):
                     mode=mode,
                     frame_aware_attention_weight=frame_aware_attention_weight,
                     lora_key_layer=lora_key_layer if lora_key_layer is not None else None,
-                    CP_U = CP_U,
-                    CP_V = CP_V, 
-                    CP_C = CP_C 
+                    CP_U=CP_U,
+                    CP_V=CP_V, 
+                    CP_C=CP_C 
                 )
 
             
