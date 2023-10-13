@@ -34,14 +34,14 @@ class BLIP_Retrieval(nn.Module):
         self.image_size = image_size
         self.R = config['R']
         
-        self.visual_encoder, vision_width = create_vit(vit, image_size, vit_grad_ckpt, vit_ckpt_layer, config=config, device = device, R= self.R)
+        self.visual_encoder, vision_width = create_vit(vit, image_size, vit_grad_ckpt, vit_ckpt_layer, config=config, device=device, R=self.R)
         
         
         self.tokenizer = init_tokenizer()   
         med_config = BertConfig.from_json_file(med_config)
         med_config.encoder_width = vision_width   
 
-        self.text_encoder = BertModel(config=med_config, add_pooling_layer=False, device = device, R= self.R)          
+        self.text_encoder = BertModel(config=med_config, add_pooling_layer=False, device=device, R=self.R)          
         text_width = self.text_encoder.config.hidden_size
         
         
@@ -51,9 +51,9 @@ class BLIP_Retrieval(nn.Module):
         # ITM loss
         self.itm_head = nn.Linear(text_width, 2) 
 
-        self.visual_encoder_m, vision_width = create_vit(vit,image_size, config=config, device=device,R=self.R)   
+        self.visual_encoder_m, vision_width = create_vit(vit,image_size, config=config, device=device, R=self.R)   
         self.vision_proj_m = nn.Linear(vision_width, embed_dim)
-        self.text_encoder_m = BertModel(config=med_config, add_pooling_layer=False, device=device,R=self.R)  
+        self.text_encoder_m = BertModel(config=med_config, add_pooling_layer=False, device=device, R=self.R)  
         self.text_proj_m = nn.Linear(text_width, embed_dim)
         self.model_pairs = [[self.visual_encoder,self.visual_encoder_m],
                             [self.vision_proj,self.vision_proj_m],
@@ -191,10 +191,10 @@ class BLIP_Retrieval(nn.Module):
                                        frame_aware_attention_weight=sim_t2f if self.config['frame_aware_attention'] else None,
                                        CP_U=self.CP_U, CP_V=self.CP_V, CP_C=self.CP_C
                                       )  
-        
+        # context-aware ITM loss
         All_Context = torch.sum(text_output.last_hidden_state[:,0,:],dim = 0) / text_output.last_hidden_state[:,0,:].shape[0]
         output_pos.last_hidden_state[:,0,:] += (0.1 * All_Context)
-        # TAG Endnew
+        
 
         if self.negative_all_rank:    
             
