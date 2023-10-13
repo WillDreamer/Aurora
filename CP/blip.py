@@ -33,7 +33,6 @@ class BLIP_Base(nn.Module):
             vit (str): model size of vision transformer
         """               
         super().__init__()
-        
         self.visual_encoder, vision_width = create_vit(vit,image_size, vit_grad_ckpt, vit_ckpt_layer)
         self.tokenizer = init_tokenizer()   
         med_config = BertConfig.from_json_file(med_config)
@@ -189,20 +188,20 @@ def init_tokenizer():
     return tokenizer
 
 
-def create_vit(vit, image_size, use_grad_checkpointing=False, ckpt_layer=0, drop_path_rate=0, config=None, adapters=None, device = None, R = 64):
+def create_vit(vit, image_size, use_grad_checkpointing=False, ckpt_layer=0, drop_path_rate=0, config=None, adapters=None, device=None, R=64):
     
     assert vit in ['base', 'large'], "vit parameter must be base or large"
     if vit=='base':
         vision_width = 768
         visual_encoder = VisionTransformer(config=config, img_size=image_size, patch_size=16, embed_dim=vision_width, depth=12, 
                                            num_heads=12, use_grad_checkpointing=use_grad_checkpointing, ckpt_layer=ckpt_layer,
-                                           drop_path_rate=0 or drop_path_rate, adapters=adapters, device = device, R = R
+                                           drop_path_rate=0 or drop_path_rate, adapters=adapters, device=device, R=R
                                           )   
     elif vit=='large':
         vision_width = 1024
         visual_encoder = VisionTransformer(config=config, img_size=image_size, patch_size=16, embed_dim=vision_width, depth=24, 
                                            num_heads=16, use_grad_checkpointing=use_grad_checkpointing, ckpt_layer=ckpt_layer,
-                                           drop_path_rate=0.1 or drop_path_rate, adapters=adapters, device = device, R = R
+                                           drop_path_rate=0.1 or drop_path_rate, adapters=adapters, device=device, R=R
                                           )   
     return visual_encoder, vision_width
 
