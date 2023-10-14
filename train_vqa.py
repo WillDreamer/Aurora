@@ -167,7 +167,6 @@ def main(args, config):
             else: 
                 parameter.requires_grad = False
 
-    print('CP:',total_para)
     if args.distributed:
         model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu], find_unused_parameters=False)
         model_without_ddp = model.module    
@@ -179,7 +178,7 @@ def main(args, config):
     start_time = time.time()    
     for epoch in range(0, config['max_epoch']):
         
-        # 训练
+        # training
         if not args.evaluate:        
             if args.distributed:
                 train_loader.sampler.set_epoch(epoch)
@@ -245,7 +244,7 @@ if __name__ == '__main__':
     parser.add_argument('--dist_url', default='env://', help='url used to set up distributed training')
     parser.add_argument('--distributed', default=True, type=bool)
     parser.add_argument('--bottleneck', default=0, type=int)
-    parser.add_argument('--R', default=64)
+    parser.add_argument('--R', default=32)
     args = parser.parse_args()
 
     config = yaml.load(open(args.config, 'r'), Loader=yaml.Loader)

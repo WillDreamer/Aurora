@@ -266,7 +266,6 @@ def main(args, config):
             total_param += p.numel()
         else:
             p.requires_grad = False
-    print('total_param', total_param, 'CP_param', CP_param)
 
 
     if args.distributed:
@@ -346,7 +345,6 @@ if __name__ == '__main__':
         print('Pretrained', args.pretrained)
         config['pretrained'] = args.pretrained
     
-    print(args.R)
     config['R'] = int(args.R)
     Path(args.output_dir).mkdir(parents=True, exist_ok=True)
     yaml.dump(config, open(os.path.join(args.output_dir, 'config.yaml'), 'w'))    

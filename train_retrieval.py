@@ -254,7 +254,6 @@ def main(args, config):
             total_param += p.numel()
         else:
             p.requires_grad = False
-    print('total_param', total_param)
 
     if args.distributed:
         model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
@@ -324,7 +323,7 @@ if __name__ == '__main__':
     parser.add_argument('--dist_url', default='env://', help='url used to set up distributed training')
     parser.add_argument('--distributed', default=True, type=bool)
     parser.add_argument('--pretrained', default=None)
-    parser.add_argument('--R', default=128)
+    parser.add_argument('--R', default=32)
 
     args = parser.parse_args()
 
@@ -333,7 +332,6 @@ if __name__ == '__main__':
         print('Pretrained', args.pretrained)
         config['pretrained'] = args.pretrained
 
-    print(args.R)
     config['R'] = int(args.R)
 
     Path(args.output_dir).mkdir(parents=True, exist_ok=True)

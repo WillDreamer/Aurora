@@ -42,7 +42,7 @@ class Mlp(nn.Module):
         B, N, C = x.shape
         CPc = CP_C @ self.mlp_CP
         fc1_cp, fc2_cp = CPc[:, :, :4].reshape(self.R, self.R * 4), CPc[:, :, 4:].reshape(self.R,self.R * 4)
-        h = self.fc1(x)  # B n 4c
+        h = self.fc1(x)  # B N 4C
         h += CP_V(self.dp(CP_U(x) @ fc1_cp).reshape(
             B, N, 4, self.R)).reshape(
             B, N, 4 * C) * self.s
@@ -89,7 +89,7 @@ class Attention(nn.Module):
     def get_attention_map(self):
         return self.attention_map
     
-    def forward(self, x, register_hook=False, CP_U = None, CP_V = None, CP_C = None):
+    def forward(self, x, register_hook=False, CP_U=None, CP_V=None, CP_C=None):
 
         B, N, C = x.shape
         qkv = self.qkv(x)
@@ -118,17 +118,17 @@ class Attention(nn.Module):
 
 class Block(nn.Module):
     def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
-                 drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm, use_grad_checkpointing=False, config=None, adapter=None, R = None):
+                 drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm, use_grad_checkpointing=False, config=None, adapter=None, R=None):
         super().__init__()
         self.config = config
         self.norm1 = norm_layer(dim)
         self.attn = Attention(
-            dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop,R=R
+            dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop, R=R
         )
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
         self.norm2 = norm_layer(dim)
         mlp_hidden_dim = int(dim * mlp_ratio)
-        self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop,R=R)
+        self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop, R=R)
 
         if use_grad_checkpointing:
             print('Vision using checkpoint!')
@@ -138,11 +138,11 @@ class Block(nn.Module):
         if self.config and self.config['adapter_visual']:
             self.adapter = adapter
 
-    def forward(self, x, register_hook=False, CP_U = None, CP_V = None, CP_C = None):
-        x = x + self.drop_path(self.attn(self.norm1(x), register_hook=register_hook, CP_U = CP_U, CP_V = CP_V, CP_C = CP_C))
+    def forward(self, x, register_hook=False, CP_U=None, CP_V=None, CP_C=None):
+        x = x + self.drop_path(self.attn(self.norm1(x), register_hook=register_hook, CP_U= CP_U, CP_V=CP_V, CP_C=CP_C))
 
         residual = x
-        x = self.drop_path(self.mlp(self.norm2(x), CP_U = CP_U, CP_V = CP_V, CP_C = CP_C))
+        x = self.drop_path(self.mlp(self.norm2(x), CP_U=CP_U, CP_V=CP_V, CP_C=CP_C))
         
         x = residual + x
         return x
@@ -153,7 +153,7 @@ class VisionTransformer(nn.Module):
     def __init__(self, img_size=224, patch_size=16, in_chans=3, num_classes=1000, embed_dim=768, depth=12,
                  num_heads=12, mlp_ratio=4., qkv_bias=True, qk_scale=None, representation_size=None,
                  drop_rate=0., attn_drop_rate=0., drop_path_rate=0., norm_layer=None, 
-                 use_grad_checkpointing=False, ckpt_layer=0, config=None, adapters=None, device=None, R = None):
+                 use_grad_checkpointing=False, ckpt_layer=0, config=None, adapters=None, device=None, R=None):
         """
         Args:
             img_size (int, tuple): input image size
@@ -171,6 +171,8 @@ class VisionTransformer(nn.Module):
             attn_drop_rate (float): attention dropout rate
             drop_path_rate (float): stochastic depth rate
             norm_layer: (nn.Module): normalization layer
+            R: (int): Rank for Aurora
+            Adapters: Adapter methods
         """
         super().__init__()
         self.config = config
@@ -196,7 +198,7 @@ class VisionTransformer(nn.Module):
                 dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, qk_scale=qk_scale,
                 drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[i], norm_layer=norm_layer,
                 use_grad_checkpointing=(use_grad_checkpointing and i>=depth-ckpt_layer), config=self.config, 
-                adapter=self.adapters[i] if self.adapters else None, R = R
+                adapter=self.adapters[i] if self.adapters else None, R=R
             )
             for i in range(depth)])
 
@@ -232,7 +234,7 @@ class VisionTransformer(nn.Module):
         cls_tokens = self.cls_token.expand(B, -1, -1)  # (bs, 1, hidden_dim)
         x = torch.cat((cls_tokens, x), dim=1) # (bs, seqlen+1, hidden_dim)
 
-        x = x + self.pos_embed[:,:x.size(1),:]
+        x = x + self.pos_embed[:,:x.size(1),:] # position embedding
         x = self.pos_drop(x)
 
         for i,blk in enumerate(self.blocks):

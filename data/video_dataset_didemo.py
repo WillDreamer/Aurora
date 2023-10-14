@@ -285,7 +285,7 @@ class DidemoDataset_train(Dataset):
         return len(self.group_datalist)
 
     def __getitem__(self, index):
-        
+        # some of the videos are missing
         for i in range(3):
             vid_id, examples = self.group_datalist[index]
             env = lmdb.open(self.video_root, readonly=True,create=False,lock=False)

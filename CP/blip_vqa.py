@@ -29,19 +29,19 @@ class BLIP_VQA(nn.Module):
         self.CP_U = nn.Linear(768, self.R, bias=False)
         self.CP_V = nn.Linear(self.R, 768, bias=False)
         self.CP_C = nn.Parameter(torch.zeros([self.R, self.R, self.R], dtype=torch.float), requires_grad=True)
-        nn.init.zeros_(self.CP_V.weight)
+        nn.init.zeros_(self.CP_V.weight) # only one the U and V need to be zero
         nn.init.xavier_uniform_(self.CP_C)
 
-        self.visual_encoder, vision_width = create_vit(vit, image_size, vit_grad_ckpt, vit_ckpt_layer, drop_path_rate=0.1, config=config, R = self.R)
+        self.visual_encoder, vision_width = create_vit(vit, image_size, vit_grad_ckpt, vit_ckpt_layer, drop_path_rate=0.1, config=config, R=self.R)
         self.tokenizer = init_tokenizer()  
         
         encoder_config = BertConfig.from_json_file(med_config)
         encoder_config.encoder_width = vision_width
-        self.text_encoder = BertModel(config=encoder_config, add_pooling_layer=False, adapter_config=config,R = self.R) 
+        self.text_encoder = BertModel(config=encoder_config, add_pooling_layer=False, adapter_config=config, R=self.R) 
         
         decoder_config = BertConfig.from_json_file(med_config)  
 
-        self.text_decoder = BertLMHeadModel(config=decoder_config, adapter_config=config,R = self.R)          
+        self.text_decoder = BertLMHeadModel(config=decoder_config, adapter_config=config, R=self.R)          
 
 
     def forward(self, image, question, answer=None, n=None, weights=None, train=True, inference='rank', k_test=128):
@@ -52,7 +52,7 @@ class BLIP_VQA(nn.Module):
         old_shape = image.shape
 
         image = image.reshape(image.size(0) * image.size(1), 3, image.size(-1), image.size(-1))
-        image_embeds = self.visual_encoder(image, CP_U = self.CP_U, CP_V = self.CP_V, CP_C = self.CP_C) 
+        image_embeds = self.visual_encoder(image, CP_U=self.CP_U, CP_V=self.CP_V, CP_C=self.CP_C) 
 
         image_embeds = image_embeds.reshape(old_shape[0], -1, image_embeds.shape[-1])
         image_atts = torch.ones(image_embeds.size()[:-1],dtype=torch.long).to(image.device)
@@ -60,7 +60,7 @@ class BLIP_VQA(nn.Module):
         question = self.tokenizer(question, padding='longest', truncation=True, max_length=35, 
                                   return_tensors="pt").to(image.device) 
         question.input_ids[:,0] = self.tokenizer.enc_token_id
-        
+        # training, traditional LM loss
         if train:                               
             answer = self.tokenizer(answer, padding='longest', return_tensors="pt").to(image.device) 
             answer.input_ids[:,0] = self.tokenizer.bos_token_id
@@ -111,7 +111,7 @@ class BLIP_VQA(nn.Module):
                 question_states = question_output.last_hidden_state.repeat_interleave(num_beams,dim=0)
                 question_atts = torch.ones(question_states.size()[:-1],dtype=torch.long).to(question_states.device)
                 model_kwargs = {"encoder_hidden_states": question_states, "encoder_attention_mask":question_atts,
-                "CP_U":self.CP_U , "CP_V":self.CP_V, "CP_C":self.CP_C}
+                "CP_U":self.CP_U, "CP_V":self.CP_V, "CP_C":self.CP_C}
                 
                 bos_ids = torch.full((old_shape[0],1),fill_value=self.tokenizer.bos_token_id,device=image.device)
                 
