@@ -1,4 +1,13 @@
-# Aurora: Mode Approximation Makes Good Multimodal Prompts
+# [NeurIPS2023] AURORA: Multimodal Parameter-efficient Transfer Learning Based on Mode Approximation
+
+## Introduction
+Aurora is an efficient PETL method used in multimodal large model fields. It uses mode approximation to further reduce the trainable parameters and promote the fusion of different modalities.
+
+**1. Comparison with other PETL methods**
+![image](https://github.com/xinlong-yang/Aurora/assets/73691354/33bbadb8-cdcc-4105-94fb-ee4fb6b77d00)
+
+**2. Overall architecture**
+![image](https://github.com/xinlong-yang/Aurora/assets/73691354/16ae4930-c44d-45c8-95e0-766bc60bb290)
 
 ## Getting Started
 
@@ -29,4 +38,15 @@
 <pre>python -m torch.distributed.run --nproc_per_node=8 train_vqa.py --config ./configs/videoqa.yaml --output_dir $static_dir</pre> 
 
 ## Acknowledgement
-Our codebase is built based on BLIP, timm. We thank the authors for the nicely organized code!
+Our codebase is built based on BLIP, timm and transformers. We thank the authors for the nicely organized code!
+
+## How To Cite Aurora
+If you use this code in your research, please kindly cite the following paper:
+```
+@article{wang2023mode,
+  title={Mode Approximation Makes Good Vision-Language Prompts},
+  author={Wang, Haixin and Yang, Xinlong and Chang, Jianlong and Jin, Dian and Sun, Jinan and Zhang, Shikun and Luo, Xiao and Tian, Qi},
+  journal={arXiv preprint arXiv:2305.08381},
+  year={2023}
+}
+```
