@@ -1,4 +1,4 @@
-# [NeurIPS2023] AURORA: Multimodal Parameter-efficient Transfer Learning Based on Mode Approximation
+# [NeurIPS 2023] AURORA: Multimodal Parameter-efficient Transfer Learning Based on Mode Approximation
 
 ## Introduction
 Aurora is an efficient PETL method used in multimodal large model fields. It uses mode approximation to further reduce the trainable parameters and promote the fusion of different modalities.
@@ -10,9 +10,11 @@ Aurora is an efficient PETL method used in multimodal large model fields. It use
 ![image](https://github.com/xinlong-yang/Aurora/assets/73691354/16ae4930-c44d-45c8-95e0-766bc60bb290)
 
 ## Getting Started
-
+#### Requirements
 - Python3, PyTorch>=1.8.0, torchvision>=0.7.0 are required for the current codebase.
-
+  
+#### Datasets
+  
 #### Image-text Retrieval
 - Download COCO and Flickr30k datasets from the original websites, and set 'image_root' in configs/retrieval_{dataset}.yaml accordingly.
 
