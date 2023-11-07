@@ -1,4 +1,4 @@
-# [NeurIPS 2023] AURORA: Multimodal Parameter-efficient Transfer Learning Based on Mode Approximation
+# [NeurIPS 2023] Parameter-efficient Tuning of Large-scale Multimodal Foundation Model
 
 ## Introduction
 Aurora is an efficient PETL method used in multimodal large model fields. It uses mode approximation to further reduce the trainable parameters and promote the fusion of different modalities.
