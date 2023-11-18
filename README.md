@@ -67,4 +67,11 @@ If you use this code in your research, please kindly cite the following paper:
   journal={arXiv preprint arXiv:2305.08381},
   year={2023}
 }
+
+@inproceedings{wang2023parameter,
+  title={Parameter-efficient Tuning of Large-scale Multimodal Foundation Model},
+  author={Wang, Haixin and Yang, Xinlong and Chang, Jianlong and Jin, Dian and Sun, Jinan and Zhang, Shikun and Luo, Xiao and Tian, Qi},
+  booktitle={Thirty-seventh Conference on Neural Information Processing Systems},
+  year={2023}
+}
 ```
