@@ -44,7 +44,6 @@ from transformers.modeling_utils import (
 )
 from transformers.utils import logging
 from transformers.models.bert.configuration_bert import BertConfig
-from .adapter import Adapter_Lora
 logger = logging.get_logger(__name__)
 
 
@@ -484,9 +483,9 @@ class BertEncoder(nn.Module):
         ) for i in range(config.num_hidden_layers)])
         self.gradient_checkpointing = False
 
-        if self.adapter_config and self.adapter_config['video_key_adapter']:
-            self.video_key_adapter = Adapter_Lora(bottleneck=self.adapter_config['video_key_adapter_dim'])
-            self.video_value_adapter = Adapter_Lora(bottleneck=self.adapter_config['video_key_adapter_dim'])
+        # if self.adapter_config and self.adapter_config['video_key_adapter']:
+        #     self.video_key_adapter = Adapter_Lora(bottleneck=self.adapter_config['video_key_adapter_dim'])
+        #     self.video_value_adapter = Adapter_Lora(bottleneck=self.adapter_config['video_key_adapter_dim'])
 
 
     
